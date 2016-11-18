@@ -8,8 +8,9 @@ my $dir = Path::Tiny->tempdir;
 
 my $worker = sub {
     my ( $boss, @args ) = @_;
+    $0 = "parallel-boss test worker";
     $dir->child("$$")->spew( map { "$_\n" } @args );
-    while ( $boss->is_watching ) {
+    while (1) {
         sleep 5;
     }
 };
@@ -18,7 +19,7 @@ my $pid = fork;
 die "Couldn't fork: $!" unless defined $pid;
 
 if ( $pid == 0 ) {
-    alarm 120;
+    $0 = "parallel-boss test boss";
     Parallel::Boss->run(
         num_workers => 4,
         args        => [qw(foo bar baz)],
@@ -33,10 +34,11 @@ sub wait4files {
     while ($tries) {
         Time::HiRes::sleep(0.2);
         @files = $dir->children;
-        last if @files == 4;
-        --$tries or fail "Expected files were not created";
+        last if @files >= 4;
+        --$tries;
     }
 
+    is @files, 4, "4 files were created";
     for (@files) {
         eq_or_diff [ $_->lines( { chomp => 1 } ) ], [qw(foo bar baz)],
           "expected content in $_";
@@ -60,6 +62,7 @@ kill HUP => $pid;
 
 note "if boss receives SIGTERM it should kill workers and quit";
 my %pids = map { $_->basename => 1 } @files;
+$_->remove for @files;
 kill TERM => $pid;
 my $tries = 20;
 while ( $tries-- ) {
@@ -68,9 +71,54 @@ while ( $tries-- ) {
     last if $kid == $pid;
 }
 
-fail "Boss is still running" if kill ZERO => $pid;
-for ( keys %pids ) {
-    fail "Worker $_ is still running" if kill ZERO => $_;
-}
+ok !kill( ZERO => $pid ), "boss exited";
+ok !kill( ZERO => keys %pids ), "all workers exited";
+
+subtest "Boss killed" => sub {
+    my $worker = sub {
+        my ( $boss, @args ) = @_;
+        my $wpid = $$;
+        $dir->child($wpid)->spew( map { "$_\n" } @args );
+        $SIG{TERM} = sub {
+            $dir->child($wpid)->spew( map { "$_\n" } @args );
+        };
+        while (1) {
+            sleep 5;
+        }
+    };
+
+    my $pid = fork;
+    die "Couldn't fork: $!" unless defined $pid;
+
+    if ( $pid == 0 ) {
+        Parallel::Boss->run(
+            num_workers  => 4,
+            args         => [qw(foo bar baz)],
+            exit_timeout => 5,
+            worker       => $worker,
+        );
+        exit 0;
+    }
+
+    note "boss should start 4 workers";
+    my @files = wait4files();
+
+    note "if boss is killed, workers should notice and quit";
+    $_->remove for @files;
+    my @pids = sort map { $_->basename } @files;
+    kill KILL => $pid;
+    my @new_files = wait4files();
+    eq_or_diff
+      [ sort map { $_->basename } @new_files ], \@pids,
+      "workers are still the same, they got SIGTERM";
+
+    my $tries = 50;
+    while ( $tries and kill ZERO => @pids ) {
+        Time::HiRes::sleep(0.2);
+        --$tries;
+    }
+
+    ok !kill( ZERO => @pids ), "all workers have exited";
+};
 
 done_testing;

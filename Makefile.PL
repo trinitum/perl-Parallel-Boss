@@ -10,6 +10,8 @@ WriteMakefile(
     VERSION_FROM        => 'lib/Parallel/Boss.pm',
     ABSTRACT_FROM       => 'lib/Parallel/Boss.pm',
     PL_FILES            => {},
+    OBJECT              => "Boss.o",
+    LIBS                => "-lpthread",
     PREREQ_PM => {
     },
     TEST_REQUIRES => {
