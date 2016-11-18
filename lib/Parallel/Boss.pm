@@ -2,7 +2,7 @@ package Parallel::Boss;
 use 5.012;
 use strict;
 use warnings;
-our $VERSION = "0.01";
+our $VERSION = "0.02";
 my $XS_VERSION=$VERSION;
 $VERSION = eval $VERSION;
 
@@ -15,7 +15,7 @@ Parallel::Boss - manage worker processes
 
 =head1 VERSION
 
-This document describes Parallel::Boss version 0.01
+This document describes Parallel::Boss version 0.02
 
 =head1 SYNOPSIS
 

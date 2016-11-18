@@ -1,3 +1,6 @@
+0.02 Fri Nov 18 2016 Pavel Shaydo <zwon@cpan.org>
+    - Use a separate thread in worker process to watch for boss exit
+
 0.01 Thu Nov 17 2016 Pavel Shaydo <zwon@cpan.org>
     - First version, released on an unsuspecting world.
 
