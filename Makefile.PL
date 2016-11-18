@@ -1,4 +1,4 @@
-use 5.008;
+use 5.012;
 use strict;
 use warnings;
 use ExtUtils::MakeMaker 6.64;
@@ -16,6 +16,7 @@ WriteMakefile(
     },
     TEST_REQUIRES => {
         'Test::More' => 0.94,
+        'Test::Most' => 0,
     },
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 6.64,
