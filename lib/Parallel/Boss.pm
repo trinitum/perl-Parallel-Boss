@@ -78,8 +78,8 @@ are still running are sent SIGKILL.
 =item B<worker>
 
 subroutine that will be executed by every worker. If it returns, the worker
-process exits. The subroutine passed the Parallel::Boss object as the first
-argument, and array specified by I<args> as the following arguments.
+process exits. The I<args> array is passed to subroutine as the list of
+arguments.
 
 =back
 
