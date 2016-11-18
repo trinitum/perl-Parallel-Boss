@@ -1,4 +1,7 @@
 blib*
+*.bs
+*.o
+Boss.c
 Makefile
 Makefile.old
 Build
