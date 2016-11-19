@@ -16,6 +16,7 @@ WriteMakefile(
     TEST_REQUIRES => {
         'Test::More' => 0.94,
         'Test::Most' => 0,
+        'Path::Tiny' => 0,
     },
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 6.64,
