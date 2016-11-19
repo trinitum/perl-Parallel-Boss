@@ -67,7 +67,7 @@ kill TERM => $pid;
 my $tries = 20;
 while ( $tries-- ) {
     Time::HiRes::sleep(0.2);
-    my $kid = waitpid 0, WNOHANG;
+    my $kid = waitpid -1, WNOHANG;
     last if $kid == $pid;
 }
 
